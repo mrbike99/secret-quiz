@@ -1,64 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Secret Opinion Quiz</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Quiz - Discover Your Wild Side</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        .question { margin: 20px 0; }
-        .btn { padding: 10px; margin: 5px; cursor: pointer; }
+        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: #fff; }
+        .container { max-width: 500px; margin: 20px auto; background: #222; padding: 20px; border-radius: 10px; }
+        .question { margin-bottom: 15px; font-size: 18px; }
+        .options { display: flex; flex-direction: column; }
+        button { padding: 10px; margin: 5px; background: #ff4757; border: none; color: #fff; border-radius: 5px; cursor: pointer; }
+        .hidden { display: none; }
+        input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Answer Secretly! Your score will be shown, but not your answers 😉</h2>
-        <form id="quizForm">
-            <div class="question">
-                <p>1. What's the best thing about Akash?</p>
-                <input type="radio" name="q1" value="5"> His humor <br>
-                <input type="radio" name="q1" value="10"> His intelligence <br>
-                <input type="radio" name="q1" value="15"> His kindness <br>
-                <input type="radio" name="q1" value="0"> Nothing (haha!) <br>
-            </div>
-            
-            <div class="question">
-                <p>2. If Akash was a superhero, what would be his power?</p>
-                <input type="radio" name="q2" value="10"> Mind reading <br>
-                <input type="radio" name="q2" value="5"> Flying <br>
-                <input type="radio" name="q2" value="15"> Super strength <br>
-                <input type="radio" name="q2" value="0"> Sleeping all day <br>
-            </div>
-            
-            <button type="button" class="btn" onclick="calculateScore()">Submit</button>
-        </form>
-        
-        <h3 id="result" style="display:none;"></h3>
+        <h2>🔥 Secret Quiz - How Wild Are You? 🔥</h2>
+        <div id="quiz"></div>
+        <div id="result" class="hidden">
+            <h3>Your score is being calculated...</h3>
+            <p>Want your full secret breakdown? Enter your Instagram:</p>
+            <input type="text" id="instagram" placeholder="@yourhandle" required>
+            <button onclick="submitInstagram()">Get My Results</button>
+            <p id="randomQuote"></p>
+            <p>Share with 3 friends to compare your scores!</p>
+            <button onclick="shareQuiz()">Share Now</button>
+        </div>
     </div>
-    
+
     <script>
-        function calculateScore() {
-            let score = 0;
-            let answers = {};
-            let form = document.getElementById("quizForm");
-            let elements = form.elements;
-            
-            for (let i = 0; i < elements.length; i++) {
-                if (elements[i].type === "radio" && elements[i].checked) {
-                    score += parseInt(elements[i].value);
-                    answers[elements[i].name] = elements[i].value;
-                }
+        const questions = [
+            { q: "What's your name?", a: ["Enter your name"] },
+            { q: "What’s your relationship status?", a: ["Single & Happy 😌", "In a committed relationship ❤️", "It’s complicated 🤯", "I enjoy multiple connections 😉"] },
+            { q: "Have you ever cheated (or been cheated on)?", a: ["Never, loyalty is key 🔒", "I was cheated on 💔", "I cheated once… but regret it 😬", "Yeah, no regrets 😈"] },
+            { q: "What’s your body count?", a: ["0-1 😇", "2-5 😉", "6-10 😏", "10+ 😈"] },
+            { q: "Do you smoke or drink?", a: ["No, never 🚫", "Occasionally 🍷", "Regularly but in control 🍻", "I'm always high or drunk 😵‍💫"] },
+            { q: "Have you ever had a one-night stand?", a: ["Nope ❌", "Thought about it 🤔", "Yep, once or twice 👀", "Too many times to count 😈"] },
+            { q: "What’s your wildest fantasy?", a: ["A deep romantic connection ❤️", "A risky adventure 😏", "Trying something forbidden 😈", "I already live my fantasies 😜"] },
+            { q: "Have you ever kept a BIG secret?", a: ["No, I’m an open book 📖", "A little secret 🤫", "Yeah, hope they never find out 😳", "I live a double life 🥷"] },
+            { q: "How do you flirt?", a: ["I don’t, too shy 😶", "I drop hints 😉", "I’m bold and direct 😏", "I just take what I want 😈"] },
+            { q: "Have you ever sent risky messages?", a: ["No way 🚫", "Just flirty texts 😏", "Yep, a few spicy pics 📸", "I’ve sent & received a lot 😈"] },
+            { q: "What’s your biggest regret?", a: ["Not taking enough risks 🤷‍♂️", "Trusting the wrong people 💔", "Doing something wild & getting caught 😬", "I don’t regret anything 😈"] }
+        ];
+        
+        let currentQuestion = 0;
+        let userAnswers = [];
+        const quizDiv = document.getElementById("quiz");
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                quizDiv.classList.add("hidden");
+                document.getElementById("result").classList.remove("hidden");
+                displayRandomQuote();
+                return;
             }
+            const qData = questions[currentQuestion];
+            let qHTML = `<div class='question'>🔥 ${qData.q}</div><div class='options'>`;
+
+            if (qData.q.includes("name")) {
+                qHTML += `<input type='text' id='input${currentQuestion}' placeholder='${qData.a[0]}' required>`;
+                qHTML += `<button onclick='nextQuestionText(${currentQuestion})'>Next</button>`;
+            } else {
+                qData.a.forEach((ans, index) => {
+                    qHTML += `<button onclick='nextQuestion(${index})'>${ans}</button>`;
+                });
+            }
+            qHTML += `</div>`;
+            quizDiv.innerHTML = qHTML;
+        }
+
+        function nextQuestion(answerIndex) {
+            userAnswers.push(questions[currentQuestion].a[answerIndex]);
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function nextQuestionText(qIndex) {
+            const inputVal = document.getElementById(`input${qIndex}`).value;
+            if (!inputVal.trim()) {
+                alert("Please fill in the required field.");
+                return;
+            }
+
+            if (qIndex === 0) {
+                localStorage.setItem("userName", inputVal);
+            }
+
+            userAnswers.push(inputVal);
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function submitInstagram() {
+            const name = localStorage.getItem("userName") || "Anonymous";
+            const instaHandle = document.getElementById("instagram").value.trim();
             
-            document.getElementById("result").innerHTML = "Your total score: " + score;
-            document.getElementById("result").style.display = "block";
-            
-            // Send secret answers to the backend
-            fetch("https://your-server.com/save-quiz", {
+            if (!instaHandle) {
+                alert("Please enter your Instagram handle to get results.");
+                return;
+            }
+
+            fetch("https://script.google.com/macros/s/AKfycby-03skf43BQ1eS4xh8yivOn4L-4XkYQ6kPGhASL9XcnueWgNeuTPiNiniKtXvGJtzR/exec", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(answers)
-            });
+                body: JSON.stringify({ name: name, instagram: instaHandle, answers: userAnswers })
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert("Thanks! Your results will be sent to @" + instaHandle + " 😉");
+            })
+            .catch(error => console.error("Error:", error));
         }
+
+        function shareQuiz() {
+            alert("Share this quiz link with 3 friends to unlock more insights!");
+        }
+
+        function displayRandomQuote() {
+            const quotes = [
+                "🔥 You are wilder than you think! Keep embracing life!",
+                "😎 Your secrets are safe with us! Stay mysterious!",
+                "💖 Love, laughter, and a little bit of madness make life amazing!",
+                "😉 Your past doesn’t define you, your courage does!",
+                "😈 You’re full of surprises! Keep being your unapologetic self!"
+            ];
+            document.getElementById("randomQuote").innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        loadQuestion();
     </script>
 </body>
 </html>
