@@ -11,7 +11,7 @@
         .options { display: flex; flex-direction: column; }
         button { padding: 10px; margin: 5px; background: #ff4757; border: none; color: #fff; border-radius: 5px; cursor: pointer; }
         .hidden { display: none; }
-        input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 5px; }
+        input { width: 100%; padding: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -28,107 +28,105 @@
             <button onclick="shareQuiz()">Share Now</button>
         </div>
     </div>
-
     <script>
-    let currentQuestion = 0;
-    const quizDiv = document.getElementById("quiz");
-
-    function loadQuestion() {
-        if (currentQuestion >= questions.length) {
-            quizDiv.classList.add("hidden");
-            document.getElementById("result").classList.remove("hidden");
-            displayRandomQuote();
-            return;
-        }
-        const qData = questions[currentQuestion];
-        let qHTML = `<div class='question'>🔥 ${qData.q}</div><div class='options'>`;
-        
-        if (qData.q.includes("name")) {
-            qHTML += `<input type='text' id='input${currentQuestion}' placeholder='${qData.a[0]}' required>`;
-            qHTML += `<button onclick='nextQuestionText(${currentQuestion})'>Next</button>`;
-        } else {
-            qData.a.forEach((ans, index) => {
-                qHTML += `<button onclick='nextQuestion("${ans}")'>${ans}</button>`;
-            });
-        }
-        
-        qHTML += `</div>`;
-        quizDiv.innerHTML = qHTML;
-    }
-
-    let answers = [];
-
-    function nextQuestion(answer) {
-        answers.push(answer);  // Store selected answer
-        currentQuestion++;
-        loadQuestion();
-    }
-
-    function nextQuestionText(qIndex) {
-        const inputVal = document.getElementById(`input${qIndex}`).value;
-        if (!inputVal) {
-            alert("Please fill in the required field.");
-            return;
-        }
-
-        if (qIndex === 0) {
-            localStorage.setItem("userName", inputVal);
-        }
-
-        answers.push(inputVal);  // Store the answer
-        currentQuestion++;
-        loadQuestion();
-    }
-
-    function submitInstagram() {
-        const name = localStorage.getItem("userName") || "Anonymous";
-        const instaHandle = document.getElementById("instagram").value;
-
-        if (!instaHandle) {
-            alert("Please enter your Instagram handle to get results.");
-            return;
-        }
-
-        fetch("https://script.google.com/macros/s/AKfycby-03skf43BQ1eS4xh8yivOn4L-4XkYQ6kPGhASL9XcnueWgNeuTPiNiniKtXvGJtzR/exec", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: name,
-                instagram: instaHandle,
-                answers: answers
-            })
-        })
-        .then(response => response.json())  // Expecting JSON response
-        .then(data => {
-            if (data.status === "success") {
-                alert("✅ Success! Your results will be sent to @" + instaHandle);
-            } else {
-                alert("❌ Something went wrong. Please try again later.");
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("⚠️ Unable to submit results. Check your internet and try again.");
-        });
-    }
-
-    function shareQuiz() {
-        alert("Share this quiz link with 3 friends to unlock more insights!");
-    }
-
-    function displayRandomQuote() {
-        const quotes = [
-            "🔥 You are wilder than you think! Keep embracing life!",
-            "😎 Your secrets are safe with us! Stay mysterious!",
-            "💖 Love, laughter, and a little bit of madness make life amazing!",
-            "😉 Your past doesn’t define you, your courage does!",
-            "😈 You’re full of surprises! Keep being your unapologetic self!"
+        const questions = [
+            { q: "What's your name?", a: ["Enter your name"] },
+            { q: "What’s your relationship status?", a: ["Single & Happy 😌", "In a committed relationship ❤️", "It’s complicated 🤯", "I enjoy multiple connections 😉"] },
+            { q: "Have you ever cheated (or been cheated on)?", a: ["Never, loyalty is key 🔒", "I was cheated on 💔", "I cheated once… but regret it 😬", "Yeah, no regrets 😈"] },
+            { q: "What’s your body count?", a: ["0-1 😇", "2-5 😉", "6-10 😏", "10+ 😈"] },
+            { q: "Do you smoke or drink?", a: ["No, never 🚫", "Occasionally 🍷", "Regularly but in control 🍻", "I'm always high or drunk 😵‍💫"] },
+            { q: "Have you ever had a one-night stand?", a: ["Nope ❌", "Thought about it 🤔", "Yep, once or twice 👀", "Too many times to count 😈"] },
+            { q: "What’s your wildest fantasy?", a: ["A deep romantic connection ❤️", "A risky adventure 😏", "Trying something forbidden 😈", "I already live my fantasies 😜"] },
+            { q: "Have you ever kept a BIG secret?", a: ["No, I’m an open book 📖", "A little secret 🤫", "Yeah, hope they never find out 😳", "I live a double life 🥷"] },
+            { q: "How do you flirt?", a: ["I don’t, too shy 😶", "I drop hints 😉", "I’m bold and direct 😏", "I just take what I want 😈"] },
+            { q: "Have you ever sent risky messages?", a: ["No way 🚫", "Just flirty texts 😏", "Yep, a few spicy pics 📸", "I’ve sent & received a lot 😈"] },
+            { q: "What’s your biggest regret?", a: ["Not taking enough risks 🤷‍♂️", "Trusting the wrong people 💔", "Doing something wild & getting caught 😬", "I don’t regret anything 😈"] }
         ];
-        document.getElementById("randomQuote").innerText = quotes[Math.floor(Math.random() * quotes.length)];
-    }
+        
+        let currentQuestion = 0;
+        const quizDiv = document.getElementById("quiz");
 
-    loadQuestion();
-</script>
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                quizDiv.classList.add("hidden");
+                document.getElementById("result").classList.remove("hidden");
+                displayRandomQuote();
+                return;
+            }
+            const qData = questions[currentQuestion];
+            let qHTML = `<div class='question'>🔥 ${qData.q}</div><div class='options'>`;
+            if (qData.q.includes("name")) {
+                qHTML += `<input type='text' id='input${currentQuestion}' placeholder='${qData.a[0]}' required>`;
+                qHTML += `<button onclick='nextQuestionText(${currentQuestion})'>Next</button>`;
+            } else {
+                qData.a.forEach((ans, index) => {
+                    qHTML += `<button onclick='nextQuestion(${index})'>${ans}</button>`;
+                });
+            }
+            qHTML += `</div>`;
+            quizDiv.innerHTML = qHTML;
+        }
 
+        function nextQuestion(answerIndex) {
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function nextQuestionText(qIndex) {
+            const inputVal = document.getElementById(`input${qIndex}`).value;
+            if (!inputVal) {
+                alert("Please fill in the required field.");
+                return;
+            }
+
+            // Store name in localStorage
+            if (qIndex === 0) {
+                localStorage.setItem("userName", inputVal);
+            }
+
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function submitInstagram() {
+            const name = localStorage.getItem("userName") || "";
+            const instaHandle = document.getElementById("instagram").value;
+            
+            if (!instaHandle) {
+                alert("Please enter your Instagram handle to get results.");
+                return;
+            }
+
+            const answers = JSON.parse(localStorage.getItem("quizAnswers") || "[]");
+
+            fetch("PASTE_YOUR_SCRIPT_URL_HERE", {  // Replace with your Apps Script URL
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name, instagram: instaHandle, answers: answers })
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert("Thanks! Your results will be sent to @" + instaHandle + " 😉");
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function shareQuiz() {
+            alert("Share this quiz link with 3 friends to unlock more insights!");
+        }
+
+        function displayRandomQuote() {
+            const quotes = [
+                "🔥 You are wilder than you think! Keep embracing life!",
+                "😎 Your secrets are safe with us! Stay mysterious!",
+                "💖 Love, laughter, and a little bit of madness make life amazing!",
+                "😉 Your past doesn’t define you, your courage does!",
+                "😈 You’re full of surprises! Keep being your unapologetic self!"
+            ];
+            document.getElementById("randomQuote").innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        loadQuestion();
+    </script>
 </body>
 </html>
